@@ -78,6 +78,23 @@ class Game:
         self.offset_x = (WINDOW_WIDTH - level_width) // 2
         self.offset_y = (WINDOW_HEIGHT - level_height) // 2
 
+    def move_player(self, dx, dy):
+        """Try to move the player in the given direction"""
+        if not self.player_pos:
+            return
+
+        current_x, current_y = self.player_pos
+        new_x = current_x + dx
+        new_y = current_y + dy
+        new_pos = (new_x, new_y)
+
+        # Check if new position is a wall
+        if new_pos in self.walls:
+            return
+
+        # For now, just move if it's not a wall (we'll add box pushing in next step)
+        self.player_pos = new_pos
+
     def handle_events(self):
         """Handle input events"""
         for event in pygame.event.get():
@@ -86,6 +103,14 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
+                elif event.key == pygame.K_UP:
+                    self.move_player(0, -1)
+                elif event.key == pygame.K_DOWN:
+                    self.move_player(0, 1)
+                elif event.key == pygame.K_LEFT:
+                    self.move_player(-1, 0)
+                elif event.key == pygame.K_RIGHT:
+                    self.move_player(1, 0)
 
     def update(self):
         """Update game state"""
