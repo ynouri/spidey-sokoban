@@ -18,29 +18,47 @@ python game.py
 ## How to Play
 
 - **Arrow Keys**: Move Spidey up, down, left, right
-- **Goal**: Push all the orange boxes onto the green targets
-- **R**: Restart the level
+- **Goal**: Push all the brown crates onto the green targets
+- **R**: Restart the current level
+- **N**: Advance to next level (after completing current level)
 - **ESC**: Quit the game
 
 ## Game Elements
 
-- 🔴 Red Circle: Spidey (the player)
-- 🟧 Orange Squares: Boxes to push
-- 🟢 Green Circles: Target positions for boxes
-- ⬛ Dark Gray Squares: Walls
-- ⬜ White Tiles: Floor
+- 🕷️ **Spidey**: Red and blue character with spider symbol (the player)
+- 📦 **Crates**: Brown wooden boxes with plank lines to push
+- 🎯 **Targets**: Glowing green circles with highlights
+- 🧱 **Walls**: Comic-style panels with thick black borders
+- ⬜ **Floor**: White tiles with gray borders
+- ✨ **Visual Effects**: Boxes glow green when on targets, victory stars animation
 
 ## Current Status
 
-**Phase 1 Complete**: Core Game
+**Phase 1 Complete ✅**: Core Game
 - ✅ Basic window and game loop
 - ✅ Grid-based level display
 - ✅ Player movement with arrow keys
 - ✅ Box pushing mechanics
 - ✅ Win condition detection
 
-**Next Steps**: Phase 2 - Polish & Features
-- Undo system
-- Spidey-themed graphics
-- Multiple levels
-- Visual polish and animations
+**Phase 2 Complete ✅**: Polish & Features
+- ✅ Spidey-themed graphics with comic book style
+- ✅ 5 levels with varying difficulty
+- ✅ Level progression system
+- ✅ Visual polish (gradient background, title, shadows)
+- ✅ Move counter
+- ✅ Victory animation with pulsing stars
+- ✅ Level indicator
+
+**Features:**
+- 🎨 Comic book themed visuals
+- 🎮 5 progressively challenging levels
+- 📊 Move counter to track performance
+- ⭐ Animated victory celebrations
+- 🔄 Easy restart with R key
+- ➡️ Level progression with N key
+
+**Next Steps**: Phase 3 - Content
+- More levels (target: 10-15 total levels)
+- Optional: Sound effects
+- Optional: Background music
