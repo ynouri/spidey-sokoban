@@ -5,6 +5,7 @@ Spidey Sokoban - A Sokoban game for kids featuring Spidey!
 
 import pygame
 import sys
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -15,17 +16,22 @@ WINDOW_HEIGHT = 600
 FPS = 60
 TILE_SIZE = 60  # Large tiles for young players
 
-# Colors
+# Colors - Comic Book Theme
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (41, 128, 185)
 GRAY = (169, 169, 169)
 DARK_GRAY = (64, 64, 64)
 LIGHT_BLUE = (173, 216, 230)
-RED = (231, 76, 60)
+SPIDEY_RED = (220, 20, 60)  # Crimson for Spidey
+SPIDEY_BLUE = (0, 71, 171)  # Deep blue for Spidey
+WEB_GRAY = (200, 200, 200)  # Light gray for webs
 ORANGE = (230, 126, 34)
+BROWN = (139, 69, 19)
 GREEN = (46, 204, 113)
+LIME = (50, 205, 50)
 YELLOW = (241, 196, 15)
+PURPLE = (142, 68, 173)  # For comic style
 
 class Game:
     def __init__(self):
@@ -167,7 +173,7 @@ class Game:
                     pygame.draw.rect(self.screen, WHITE, rect)
                     pygame.draw.rect(self.screen, GRAY, rect, 2)
 
-        # Draw walls
+        # Draw walls (comic book panel style)
         for x, y in self.walls:
             rect = pygame.Rect(
                 self.offset_x + x * TILE_SIZE,
@@ -175,17 +181,27 @@ class Game:
                 TILE_SIZE,
                 TILE_SIZE
             )
-            pygame.draw.rect(self.screen, DARK_GRAY, rect)
-            pygame.draw.rect(self.screen, BLACK, rect, 3)
+            # Gradient effect - darker at bottom
+            pygame.draw.rect(self.screen, (80, 80, 90), rect)
+            pygame.draw.rect(self.screen, BLACK, rect, 5)  # Thick comic border
+            # Add inner highlight
+            inner_rect = pygame.Rect(rect.x + 5, rect.y + 5, rect.width - 10, rect.height - 10)
+            pygame.draw.rect(self.screen, (100, 100, 110), inner_rect, 2)
 
-        # Draw targets (green circles)
+        # Draw targets (glowing green circles)
         for x, y in self.targets:
             center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
             center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
+            # Outer glow
+            pygame.draw.circle(self.screen, LIME, (center_x, center_y), TILE_SIZE // 3 + 2)
+            # Main circle
             pygame.draw.circle(self.screen, GREEN, (center_x, center_y), TILE_SIZE // 3)
-            pygame.draw.circle(self.screen, DARK_GRAY, (center_x, center_y), TILE_SIZE // 3, 3)
+            # Inner highlight
+            pygame.draw.circle(self.screen, LIME, (center_x - 5, center_y - 5), TILE_SIZE // 6)
+            # Border
+            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), TILE_SIZE // 3, 3)
 
-        # Draw boxes (orange squares)
+        # Draw boxes (crate style with wood texture)
         for x, y in self.boxes:
             rect = pygame.Rect(
                 self.offset_x + x * TILE_SIZE + 8,
@@ -193,16 +209,46 @@ class Game:
                 TILE_SIZE - 16,
                 TILE_SIZE - 16
             )
-            pygame.draw.rect(self.screen, ORANGE, rect)
-            pygame.draw.rect(self.screen, DARK_GRAY, rect, 3)
+            # Main box color
+            pygame.draw.rect(self.screen, BROWN, rect)
+            # Add wood plank lines
+            pygame.draw.line(self.screen, BLACK,
+                           (rect.left, rect.centery), (rect.right, rect.centery), 2)
+            pygame.draw.line(self.screen, BLACK,
+                           (rect.centerx, rect.top), (rect.centerx, rect.bottom), 2)
+            # Border
+            pygame.draw.rect(self.screen, BLACK, rect, 4)
+            # Check if box is on target (glow effect)
+            if (x, y) in self.targets:
+                glow_rect = rect.inflate(6, 6)
+                pygame.draw.rect(self.screen, GREEN, glow_rect, 3)
 
-        # Draw player (red circle for Spidey)
+        # Draw player (Spidey with spider symbol)
         if self.player_pos:
             x, y = self.player_pos
             center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
             center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
-            pygame.draw.circle(self.screen, RED, (center_x, center_y), TILE_SIZE // 2 - 5)
-            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), TILE_SIZE // 2 - 5, 3)
+            radius = TILE_SIZE // 2 - 5
+
+            # Main body (red and blue split)
+            pygame.draw.circle(self.screen, SPIDEY_RED, (center_x, center_y), radius)
+            # Blue accent (left side)
+            pygame.draw.circle(self.screen, SPIDEY_BLUE, (center_x - radius//3, center_y), radius//2)
+
+            # Draw spider symbol (simple black spider)
+            spider_size = radius // 3
+            # Spider body
+            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), spider_size)
+            # Spider legs (4 lines radiating out)
+            for angle in [45, 135, 225, 315]:
+                import math
+                rad = math.radians(angle)
+                end_x = center_x + int(radius * 0.6 * math.cos(rad))
+                end_y = center_y + int(radius * 0.6 * math.sin(rad))
+                pygame.draw.line(self.screen, BLACK, (center_x, center_y), (end_x, end_y), 3)
+
+            # Outer border
+            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), radius, 3)
 
         # Draw victory message if level complete
         if self.level_complete:

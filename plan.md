@@ -26,10 +26,9 @@
 5. **Win Condition** - Detect when all boxes are on targets and show victory
 
 ### Phase 2: Polish & Features
-6. **Undo System** - Add undo functionality (press U or Ctrl+Z)
-7. **Spidey Graphics** - Replace placeholders with actual Spidey-themed images
-8. **Multiple Levels** - Add 3-5 easy levels with level progression
-9. **Visual Polish** - Add animations, sounds, and comic-style effects
+6. **Spidey Graphics** - Replace placeholders with actual Spidey-themed images
+7. **Multiple Levels** - Add 3-5 easy levels with level progression
+8. **Visual Polish** - Add animations, sounds, and comic-style effects
 
 ### Phase 3: Content
 10. **More Levels** - Find or create 10-15 levels of varying difficulty
