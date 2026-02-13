@@ -18,11 +18,17 @@ python game.py
 
 ## How to Play
 
-- **Arrow Keys**: Move Spidey up, down, left, right
+**Main Menu:**
+- **UP/DOWN**: Select difficulty (Easy/Medium/Hard)
+- **ENTER or SPACE**: Start game with selected difficulty
+- **ESC**: Quit game
+
+**In Game:**
+- **Arrow Keys**: Move Spin up, down, left, right
 - **Goal**: Push all the brown crates onto the green targets
 - **R**: Restart the current level
 - **N**: Advance to next level (after completing current level)
-- **ESC**: Quit the game
+- **ESC**: Return to main menu
 
 ## Game Elements
 
@@ -57,15 +63,33 @@ python game.py
 - ✅ Image processing to remove white background
 - ✅ Proper sprite scaling and centering
 
+**Iteration C Complete ✅**: More Levels & Testing
+- ✅ 12 total levels across 3 difficulty levels
+- ✅ Difficulty selection menu (Easy/Medium/Hard)
+- ✅ Level file system (levels organized by difficulty)
+- ✅ Internal walls/obstacles in medium and hard levels
+- ✅ LevelManager class for level loading
+- ✅ Comprehensive unit tests for level validation
+- ✅ All levels verified to be valid and properly formatted
+
 **Features:**
 - 🎨 Comic book themed visuals
-- 🎮 5 progressively challenging levels
+- 🎮 12 levels across 3 difficulty levels
+  - Easy: 5 levels
+  - Medium: 4 levels (with internal obstacles)
+  - Hard: 3 levels (complex puzzles)
 - 📊 Move counter to track performance
 - ⭐ Animated victory celebrations
 - 🔄 Easy restart with R key
 - ➡️ Level progression with N key
+- 📂 Level file system for easy expansion
+- ✅ Unit tested for level validity
 
-**Next Steps**: Phase 3 - Content
-- More levels (target: 10-15 total levels)
-- Optional: Sound effects
-- Optional: Background music
+**Potential Future Enhancements:**
+- More levels (currently 12, could expand to 20+)
+- Additional character sprites (Spidey, Ghost-Spider)
+- Sound effects (box push, level complete, etc.)
+- Background music
+- Level editor
+- Save/load progress
+- Time tracking and best times
