@@ -13,11 +13,19 @@ pygame.init()
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 FPS = 60
+TILE_SIZE = 60  # Large tiles for young players
 
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (41, 128, 185)
+GRAY = (169, 169, 169)
+DARK_GRAY = (64, 64, 64)
+LIGHT_BLUE = (173, 216, 230)
+RED = (231, 76, 60)
+ORANGE = (230, 126, 34)
+GREEN = (46, 204, 113)
+YELLOW = (241, 196, 15)
 
 class Game:
     def __init__(self):
@@ -25,6 +33,50 @@ class Game:
         pygame.display.set_caption("Spidey Sokoban")
         self.clock = pygame.time.Clock()
         self.running = True
+
+        # Level 1: Simple level with 2 boxes
+        # '#' = wall, ' ' = floor, '@' = player, '$' = box, '.' = target
+        self.level_map = [
+            "########",
+            "#      #",
+            "# .$   #",
+            "# $@ . #",
+            "#      #",
+            "########"
+        ]
+
+        self.load_level()
+
+    def load_level(self):
+        """Parse the level map and initialize game state"""
+        self.walls = []
+        self.targets = []
+        self.boxes = []
+        self.player_pos = None
+
+        for y, row in enumerate(self.level_map):
+            for x, cell in enumerate(row):
+                pos = (x, y)
+                if cell == '#':
+                    self.walls.append(pos)
+                elif cell == '@':
+                    self.player_pos = pos
+                elif cell == '$':
+                    self.boxes.append(pos)
+                elif cell == '.':
+                    self.targets.append(pos)
+                elif cell == '*':  # Box on target
+                    self.boxes.append(pos)
+                    self.targets.append(pos)
+                elif cell == '+':  # Player on target
+                    self.player_pos = pos
+                    self.targets.append(pos)
+
+        # Calculate offset to center the level
+        level_width = len(self.level_map[0]) * TILE_SIZE
+        level_height = len(self.level_map) * TILE_SIZE
+        self.offset_x = (WINDOW_WIDTH - level_width) // 2
+        self.offset_y = (WINDOW_HEIGHT - level_height) // 2
 
     def handle_events(self):
         """Handle input events"""
@@ -41,13 +93,57 @@ class Game:
 
     def draw(self):
         """Draw everything to the screen"""
-        self.screen.fill(BLUE)
+        self.screen.fill(LIGHT_BLUE)
 
-        # Draw title text
-        font = pygame.font.Font(None, 74)
-        title = font.render("Spidey Sokoban", True, WHITE)
-        title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
-        self.screen.blit(title, title_rect)
+        # Draw floor (for all non-wall positions)
+        for y, row in enumerate(self.level_map):
+            for x, cell in enumerate(row):
+                if cell != '#':
+                    rect = pygame.Rect(
+                        self.offset_x + x * TILE_SIZE,
+                        self.offset_y + y * TILE_SIZE,
+                        TILE_SIZE,
+                        TILE_SIZE
+                    )
+                    pygame.draw.rect(self.screen, WHITE, rect)
+                    pygame.draw.rect(self.screen, GRAY, rect, 2)
+
+        # Draw walls
+        for x, y in self.walls:
+            rect = pygame.Rect(
+                self.offset_x + x * TILE_SIZE,
+                self.offset_y + y * TILE_SIZE,
+                TILE_SIZE,
+                TILE_SIZE
+            )
+            pygame.draw.rect(self.screen, DARK_GRAY, rect)
+            pygame.draw.rect(self.screen, BLACK, rect, 3)
+
+        # Draw targets (green circles)
+        for x, y in self.targets:
+            center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
+            center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
+            pygame.draw.circle(self.screen, GREEN, (center_x, center_y), TILE_SIZE // 3)
+            pygame.draw.circle(self.screen, DARK_GRAY, (center_x, center_y), TILE_SIZE // 3, 3)
+
+        # Draw boxes (orange squares)
+        for x, y in self.boxes:
+            rect = pygame.Rect(
+                self.offset_x + x * TILE_SIZE + 8,
+                self.offset_y + y * TILE_SIZE + 8,
+                TILE_SIZE - 16,
+                TILE_SIZE - 16
+            )
+            pygame.draw.rect(self.screen, ORANGE, rect)
+            pygame.draw.rect(self.screen, DARK_GRAY, rect, 3)
+
+        # Draw player (red circle for Spidey)
+        if self.player_pos:
+            x, y = self.player_pos
+            center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
+            center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
+            pygame.draw.circle(self.screen, RED, (center_x, center_y), TILE_SIZE // 2 - 5)
+            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), TILE_SIZE // 2 - 5, 3)
 
         pygame.display.flip()
 
