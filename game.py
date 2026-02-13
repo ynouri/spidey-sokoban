@@ -92,7 +92,22 @@ class Game:
         if new_pos in self.walls:
             return
 
-        # For now, just move if it's not a wall (we'll add box pushing in next step)
+        # Check if there's a box at the new position
+        if new_pos in self.boxes:
+            # Calculate where the box would move to
+            box_new_x = new_x + dx
+            box_new_y = new_y + dy
+            box_new_pos = (box_new_x, box_new_y)
+
+            # Check if the box can be pushed
+            if box_new_pos in self.walls or box_new_pos in self.boxes:
+                return  # Can't push box into wall or another box
+
+            # Push the box
+            self.boxes.remove(new_pos)
+            self.boxes.append(box_new_pos)
+
+        # Move the player
         self.player_pos = new_pos
 
     def handle_events(self):
