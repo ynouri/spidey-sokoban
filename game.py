@@ -11,10 +11,10 @@ import math
 pygame.init()
 
 # Constants
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 600
+WINDOW_WIDTH = 1200  # Larger window
+WINDOW_HEIGHT = 800
 FPS = 60
-TILE_SIZE = 60  # Large tiles for young players
+TILE_SIZE = 80  # Larger tiles for young players and to fit sprites
 
 # Colors - Comic Book Theme
 WHITE = (255, 255, 255)
@@ -39,6 +39,19 @@ class Game:
         pygame.display.set_caption("Spidey Sokoban")
         self.clock = pygame.time.Clock()
         self.running = True
+
+        # Load Spidey sprite
+        try:
+            self.player_sprite = pygame.image.load('assets/spin.png')
+            # Scale to fit tile size (slightly smaller to fit in tile)
+            sprite_size = int(TILE_SIZE * 0.9)
+            self.player_sprite = pygame.transform.scale(
+                self.player_sprite,
+                (sprite_size, sprite_size)
+            )
+        except Exception as e:
+            print(f"Warning: Could not load player sprite: {e}")
+            self.player_sprite = None
 
         # Collection of levels
         # '#' = wall, ' ' = floor, '@' = player, '$' = box, '.' = target
@@ -300,31 +313,32 @@ class Game:
                 glow_rect = rect.inflate(6, 6)
                 pygame.draw.rect(self.screen, GREEN, glow_rect, 3)
 
-        # Draw player (Spidey with spider symbol)
+        # Draw player (Spidey sprite)
         if self.player_pos:
             x, y = self.player_pos
-            center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
-            center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
-            radius = TILE_SIZE // 2 - 5
 
-            # Main body (red and blue split)
-            pygame.draw.circle(self.screen, SPIDEY_RED, (center_x, center_y), radius)
-            # Blue accent (left side)
-            pygame.draw.circle(self.screen, SPIDEY_BLUE, (center_x - radius//3, center_y), radius//2)
-
-            # Draw spider symbol (simple black spider)
-            spider_size = radius // 3
-            # Spider body
-            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), spider_size)
-            # Spider legs (4 lines radiating out)
-            for angle in [45, 135, 225, 315]:
-                rad = math.radians(angle)
-                end_x = center_x + int(radius * 0.6 * math.cos(rad))
-                end_y = center_y + int(radius * 0.6 * math.sin(rad))
-                pygame.draw.line(self.screen, BLACK, (center_x, center_y), (end_x, end_y), 3)
-
-            # Outer border
-            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), radius, 3)
+            if self.player_sprite:
+                # Use the sprite image
+                sprite_rect = self.player_sprite.get_rect()
+                # Center the sprite in the tile
+                sprite_x = self.offset_x + x * TILE_SIZE + (TILE_SIZE - sprite_rect.width) // 2
+                sprite_y = self.offset_y + y * TILE_SIZE + (TILE_SIZE - sprite_rect.height) // 2
+                self.screen.blit(self.player_sprite, (sprite_x, sprite_y))
+            else:
+                # Fallback to drawn character if sprite not loaded
+                center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
+                center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
+                radius = TILE_SIZE // 2 - 5
+                pygame.draw.circle(self.screen, SPIDEY_RED, (center_x, center_y), radius)
+                pygame.draw.circle(self.screen, SPIDEY_BLUE, (center_x - radius//3, center_y), radius//2)
+                spider_size = radius // 3
+                pygame.draw.circle(self.screen, BLACK, (center_x, center_y), spider_size)
+                for angle in [45, 135, 225, 315]:
+                    rad = math.radians(angle)
+                    end_x = center_x + int(radius * 0.6 * math.cos(rad))
+                    end_y = center_y + int(radius * 0.6 * math.sin(rad))
+                    pygame.draw.line(self.screen, BLACK, (center_x, center_y), (end_x, end_y), 3)
+                pygame.draw.circle(self.screen, BLACK, (center_x, center_y), radius, 3)
 
         # Draw level indicator and move counter
         font_small = pygame.font.Font(None, 36)
