@@ -6,6 +6,7 @@ A Sokoban puzzle game for kids featuring Spidey!
 
 - Python 3.x
 - pygame
+- Pillow (for image processing)
 - conda environment named "pygame"
 
 ## How to Run
@@ -25,7 +26,7 @@ python game.py
 
 ## Game Elements
 
-- 🕷️ **Spidey**: Red and blue character with spider symbol (the player)
+- 🕷️ **Spin (Miles Morales)**: Cute chibi-style Spider-Man sprite (the player)
 - 📦 **Crates**: Brown wooden boxes with plank lines to push
 - 🎯 **Targets**: Glowing green circles with highlights
 - 🧱 **Walls**: Comic-style panels with thick black borders
@@ -49,6 +50,12 @@ python game.py
 - ✅ Move counter
 - ✅ Victory animation with pulsing stars
 - ✅ Level indicator
+
+**Iteration B Complete ✅**: Spidey Sprites
+- ✅ Larger window (1200x800) and tiles (80px)
+- ✅ Actual Spin character sprite with transparent background
+- ✅ Image processing to remove white background
+- ✅ Proper sprite scaling and centering
 
 **Features:**
 - 🎨 Comic book themed visuals
