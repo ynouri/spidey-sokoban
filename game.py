@@ -40,22 +40,70 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
 
-        # Level 1: Simple level with 2 boxes
+        # Collection of levels
         # '#' = wall, ' ' = floor, '@' = player, '$' = box, '.' = target
-        self.level_map = [
-            "########",
-            "#      #",
-            "# .$   #",
-            "# $@ . #",
-            "#      #",
-            "########"
+        self.levels = [
+            # Level 1: Simple introduction
+            [
+                "########",
+                "#      #",
+                "# .$   #",
+                "# $@ . #",
+                "#      #",
+                "########"
+            ],
+            # Level 2: Three boxes in a line
+            [
+                "#########",
+                "#   .   #",
+                "#   $   #",
+                "#   $   #",
+                "#   $   #",
+                "#   @   #",
+                "#   .   #",
+                "#   .   #",
+                "#########"
+            ],
+            # Level 3: Corner puzzle
+            [
+                "##########",
+                "#        #",
+                "# $$     #",
+                "#  @     #",
+                "#        #",
+                "#     .. #",
+                "#     .. #",
+                "##########"
+            ],
+            # Level 4: Classic formation
+            [
+                "#######",
+                "#     #",
+                "# .$. #",
+                "# $.$ #",
+                "#  @  #",
+                "#     #",
+                "#######"
+            ],
+            # Level 5: Challenge
+            [
+                "##########",
+                "#        #",
+                "# $ $ $  #",
+                "#   @    #",
+                "#        #",
+                "#  . . . #",
+                "##########"
+            ]
         ]
 
+        self.current_level = 0
         self.load_level()
         self.level_complete = False
 
     def load_level(self):
         """Parse the level map and initialize game state"""
+        self.level_map = self.levels[self.current_level]
         self.walls = []
         self.targets = []
         self.boxes = []
@@ -141,6 +189,12 @@ class Game:
                     # Restart level
                     self.level_complete = False
                     self.load_level()
+                elif event.key == pygame.K_n and self.level_complete:
+                    # Next level
+                    if self.current_level < len(self.levels) - 1:
+                        self.current_level += 1
+                        self.level_complete = False
+                        self.load_level()
                 elif not self.level_complete:
                     # Only allow movement if level not complete
                     if event.key == pygame.K_UP:
@@ -241,7 +295,6 @@ class Game:
             pygame.draw.circle(self.screen, BLACK, (center_x, center_y), spider_size)
             # Spider legs (4 lines radiating out)
             for angle in [45, 135, 225, 315]:
-                import math
                 rad = math.radians(angle)
                 end_x = center_x + int(radius * 0.6 * math.cos(rad))
                 end_y = center_y + int(radius * 0.6 * math.sin(rad))
@@ -249,6 +302,11 @@ class Game:
 
             # Outer border
             pygame.draw.circle(self.screen, BLACK, (center_x, center_y), radius, 3)
+
+        # Draw level indicator
+        font_small = pygame.font.Font(None, 36)
+        level_text = font_small.render(f"Level {self.current_level + 1}/{len(self.levels)}", True, BLACK)
+        self.screen.blit(level_text, (20, 20))
 
         # Draw victory message if level complete
         if self.level_complete:
@@ -262,13 +320,25 @@ class Game:
             font_large = pygame.font.Font(None, 80)
             font_small = pygame.font.Font(None, 40)
 
-            victory_text = font_large.render("LEVEL COMPLETE!", True, YELLOW)
-            victory_rect = victory_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
+            # Check if this is the last level
+            is_last_level = self.current_level == len(self.levels) - 1
+
+            if is_last_level:
+                victory_text = font_large.render("ALL LEVELS COMPLETE!", True, YELLOW)
+            else:
+                victory_text = font_large.render("LEVEL COMPLETE!", True, YELLOW)
+            victory_rect = victory_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50))
             self.screen.blit(victory_text, victory_rect)
 
+            # Show appropriate instructions
             restart_text = font_small.render("Press R to restart", True, WHITE)
-            restart_rect = restart_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40))
+            restart_rect = restart_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 20))
             self.screen.blit(restart_text, restart_rect)
+
+            if not is_last_level:
+                next_text = font_small.render("Press N for next level", True, LIME)
+                next_rect = next_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 70))
+                self.screen.blit(next_text, next_rect)
 
         pygame.display.flip()
 
