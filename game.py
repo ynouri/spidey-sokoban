@@ -6,6 +6,7 @@ Spidey Sokoban - A Sokoban game for kids featuring Spidey!
 import pygame
 import sys
 import math
+from levels import LevelManager
 
 # Initialize Pygame
 pygame.init()
@@ -53,68 +54,23 @@ class Game:
             print(f"Warning: Could not load player sprite: {e}")
             self.player_sprite = None
 
-        # Collection of levels
-        # '#' = wall, ' ' = floor, '@' = player, '$' = box, '.' = target
-        self.levels = [
-            # Level 1: Simple introduction
-            [
-                "########",
-                "#      #",
-                "# .$   #",
-                "# $@ . #",
-                "#      #",
-                "########"
-            ],
-            # Level 2: Three boxes in a line
-            [
-                "#########",
-                "#   .   #",
-                "#   $   #",
-                "#   $   #",
-                "#   $   #",
-                "#   @   #",
-                "#   .   #",
-                "#   .   #",
-                "#########"
-            ],
-            # Level 3: Corner puzzle
-            [
-                "##########",
-                "#        #",
-                "# $$     #",
-                "#  @     #",
-                "#        #",
-                "#     .. #",
-                "#     .. #",
-                "##########"
-            ],
-            # Level 4: Classic formation
-            [
-                "#######",
-                "#     #",
-                "# .$. #",
-                "# $.$ #",
-                "#  @  #",
-                "#     #",
-                "#######"
-            ],
-            # Level 5: Challenge
-            [
-                "##########",
-                "#        #",
-                "# $ $ $  #",
-                "#   @    #",
-                "#        #",
-                "#  . . . #",
-                "##########"
-            ]
-        ]
+        # Game states
+        self.STATE_MENU = 'menu'
+        self.STATE_PLAYING = 'playing'
+        self.state = self.STATE_MENU
 
+        # Level management
+        self.level_manager = LevelManager()
+        self.difficulty = None  # Will be set when user selects difficulty
+        self.levels = []
         self.current_level = 0
-        self.load_level()
         self.level_complete = False
         self.move_count = 0
         self.victory_frame = 0  # For victory animation
+
+        # Menu state
+        self.selected_difficulty = 0  # 0=easy, 1=medium, 2=hard
+        self.difficulty_names = ['EASY', 'MEDIUM', 'HARD']
 
     def load_level(self):
         """Parse the level map and initialize game state"""
@@ -151,6 +107,18 @@ class Game:
         # Reset move counter and victory animation
         self.move_count = 0
         self.victory_frame = 0
+
+    def start_game(self, difficulty):
+        """Start a new game with the selected difficulty"""
+        self.difficulty = difficulty
+        self.levels = self.level_manager.get_levels(difficulty.lower())
+        if not self.levels:
+            print(f"No levels found for difficulty: {difficulty}")
+            return False
+        self.current_level = 0
+        self.state = self.STATE_PLAYING
+        self.load_level()
+        return True
 
     def move_player(self, dx, dy):
         """Try to move the player in the given direction"""
@@ -204,35 +172,117 @@ class Game:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.running = False
-                elif event.key == pygame.K_r:
-                    # Restart level
-                    self.level_complete = False
-                    self.load_level()
-                elif event.key == pygame.K_n and self.level_complete:
-                    # Next level
-                    if self.current_level < len(self.levels) - 1:
-                        self.current_level += 1
+                    if self.state == self.STATE_PLAYING:
+                        # Return to menu from game
+                        self.state = self.STATE_MENU
+                    else:
+                        self.running = False
+
+                # Menu state handling
+                if self.state == self.STATE_MENU:
+                    if event.key == pygame.K_UP:
+                        self.selected_difficulty = (self.selected_difficulty - 1) % 3
+                    elif event.key == pygame.K_DOWN:
+                        self.selected_difficulty = (self.selected_difficulty + 1) % 3
+                    elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                        # Start game with selected difficulty
+                        diff_name = self.difficulty_names[self.selected_difficulty]
+                        self.start_game(diff_name)
+
+                # Playing state handling
+                elif self.state == self.STATE_PLAYING:
+                    if event.key == pygame.K_r:
+                        # Restart level
                         self.level_complete = False
                         self.load_level()
-                elif not self.level_complete:
-                    # Only allow movement if level not complete
-                    if event.key == pygame.K_UP:
-                        self.move_player(0, -1)
-                    elif event.key == pygame.K_DOWN:
-                        self.move_player(0, 1)
-                    elif event.key == pygame.K_LEFT:
-                        self.move_player(-1, 0)
-                    elif event.key == pygame.K_RIGHT:
-                        self.move_player(1, 0)
+                    elif event.key == pygame.K_n and self.level_complete:
+                        # Next level
+                        if self.current_level < len(self.levels) - 1:
+                            self.current_level += 1
+                            self.level_complete = False
+                            self.load_level()
+                    elif not self.level_complete:
+                        # Only allow movement if level not complete
+                        if event.key == pygame.K_UP:
+                            self.move_player(0, -1)
+                        elif event.key == pygame.K_DOWN:
+                            self.move_player(0, 1)
+                        elif event.key == pygame.K_LEFT:
+                            self.move_player(-1, 0)
+                        elif event.key == pygame.K_RIGHT:
+                            self.move_player(1, 0)
 
     def update(self):
         """Update game state"""
-        if self.level_complete:
+        if self.state == self.STATE_PLAYING and self.level_complete:
             self.victory_frame += 1
+
+    def draw_menu(self):
+        """Draw the difficulty selection menu"""
+        # Gradient background
+        for y in range(WINDOW_HEIGHT):
+            color_value = int(173 + (y / WINDOW_HEIGHT) * 40)
+            color = (color_value, 216, 230)
+            pygame.draw.line(self.screen, color, (0, y), (WINDOW_WIDTH, y))
+
+        # Title
+        font_title = pygame.font.Font(None, 80)
+        title = font_title.render("SPIDEY SOKOBAN", True, SPIDEY_RED)
+        title_shadow = font_title.render("SPIDEY SOKOBAN", True, BLACK)
+        title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 150))
+        shadow_rect = title_rect.copy()
+        shadow_rect.x += 4
+        shadow_rect.y += 4
+        self.screen.blit(title_shadow, shadow_rect)
+        self.screen.blit(title, title_rect)
+
+        # Subtitle
+        font_subtitle = pygame.font.Font(None, 40)
+        subtitle = font_subtitle.render("SELECT DIFFICULTY", True, BLACK)
+        subtitle_rect = subtitle.get_rect(center=(WINDOW_WIDTH // 2, 250))
+        self.screen.blit(subtitle, subtitle_rect)
+
+        # Difficulty options
+        font_option = pygame.font.Font(None, 60)
+        y_start = 350
+        y_spacing = 100
+
+        for i, diff_name in enumerate(self.difficulty_names):
+            # Get level count for this difficulty
+            level_count = self.level_manager.get_level_count(diff_name.lower())
+            text = f"{diff_name} ({level_count} levels)"
+
+            if i == self.selected_difficulty:
+                # Selected option - highlighted
+                color = SPIDEY_RED
+                # Draw selection box
+                box_rect = pygame.Rect(WINDOW_WIDTH // 2 - 250, y_start + i * y_spacing - 35,
+                                      500, 70)
+                pygame.draw.rect(self.screen, YELLOW, box_rect, 5)
+            else:
+                color = DARK_GRAY
+
+            option_text = font_option.render(text, True, color)
+            option_rect = option_text.get_rect(center=(WINDOW_WIDTH // 2, y_start + i * y_spacing))
+            self.screen.blit(option_text, option_rect)
+
+        # Instructions
+        font_small = pygame.font.Font(None, 36)
+        instr1 = font_small.render("Use UP/DOWN arrows to select", True, BLACK)
+        instr2 = font_small.render("Press ENTER or SPACE to start", True, BLACK)
+        instr1_rect = instr1.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 100))
+        instr2_rect = instr2.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 60))
+        self.screen.blit(instr1, instr1_rect)
+        self.screen.blit(instr2, instr2_rect)
 
     def draw(self):
         """Draw everything to the screen"""
+        if self.state == self.STATE_MENU:
+            self.draw_menu()
+            pygame.display.flip()
+            return
+
+        # Draw game state
         # Gradient background (darker at bottom)
         for y in range(WINDOW_HEIGHT):
             color_value = int(173 + (y / WINDOW_HEIGHT) * 40)
