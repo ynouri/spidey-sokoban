@@ -100,6 +100,8 @@ class Game:
         self.current_level = 0
         self.load_level()
         self.level_complete = False
+        self.move_count = 0
+        self.victory_frame = 0  # For victory animation
 
     def load_level(self):
         """Parse the level map and initialize game state"""
@@ -133,6 +135,10 @@ class Game:
         self.offset_x = (WINDOW_WIDTH - level_width) // 2
         self.offset_y = (WINDOW_HEIGHT - level_height) // 2
 
+        # Reset move counter and victory animation
+        self.move_count = 0
+        self.victory_frame = 0
+
     def move_player(self, dx, dy):
         """Try to move the player in the given direction"""
         if not self.player_pos:
@@ -164,6 +170,7 @@ class Game:
 
         # Move the player
         self.player_pos = new_pos
+        self.move_count += 1
 
         # Check if level is complete
         self.check_win()
@@ -208,11 +215,27 @@ class Game:
 
     def update(self):
         """Update game state"""
-        pass
+        if self.level_complete:
+            self.victory_frame += 1
 
     def draw(self):
         """Draw everything to the screen"""
-        self.screen.fill(LIGHT_BLUE)
+        # Gradient background (darker at bottom)
+        for y in range(WINDOW_HEIGHT):
+            color_value = int(173 + (y / WINDOW_HEIGHT) * 40)
+            color = (color_value, 216, 230)
+            pygame.draw.line(self.screen, color, (0, y), (WINDOW_WIDTH, y))
+
+        # Draw title
+        font_title = pygame.font.Font(None, 56)
+        title = font_title.render("SPIDEY SOKOBAN", True, SPIDEY_RED)
+        title_shadow = font_title.render("SPIDEY SOKOBAN", True, BLACK)
+        title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 30))
+        shadow_rect = title_rect.copy()
+        shadow_rect.x += 3
+        shadow_rect.y += 3
+        self.screen.blit(title_shadow, shadow_rect)
+        self.screen.blit(title, title_rect)
 
         # Draw floor (for all non-wall positions)
         for y, row in enumerate(self.level_map):
@@ -303,13 +326,35 @@ class Game:
             # Outer border
             pygame.draw.circle(self.screen, BLACK, (center_x, center_y), radius, 3)
 
-        # Draw level indicator
+        # Draw level indicator and move counter
         font_small = pygame.font.Font(None, 36)
         level_text = font_small.render(f"Level {self.current_level + 1}/{len(self.levels)}", True, BLACK)
         self.screen.blit(level_text, (20, 20))
 
+        moves_text = font_small.render(f"Moves: {self.move_count}", True, BLACK)
+        self.screen.blit(moves_text, (20, 55))
+
         # Draw victory message if level complete
         if self.level_complete:
+            # Draw animated stars/sparkles
+            import random
+            random.seed(42)  # Fixed seed for consistent star positions
+            for i in range(20):
+                # Calculate star position with slight animation
+                star_x = random.randint(50, WINDOW_WIDTH - 50)
+                star_y = random.randint(80, WINDOW_HEIGHT - 80)
+                # Animate star size
+                pulse = abs((self.victory_frame + i * 10) % 60 - 30) / 30
+                star_size = int(3 + pulse * 5)
+                # Draw star
+                pygame.draw.circle(self.screen, YELLOW, (star_x, star_y), star_size)
+                # Draw star points
+                for angle in [0, 72, 144, 216, 288]:
+                    rad = math.radians(angle + (self.victory_frame % 360))
+                    point_x = star_x + int(star_size * 2 * math.cos(rad))
+                    point_y = star_y + int(star_size * 2 * math.sin(rad))
+                    pygame.draw.line(self.screen, YELLOW, (star_x, star_y), (point_x, point_y), 2)
+
             # Semi-transparent overlay
             overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
             overlay.set_alpha(200)
