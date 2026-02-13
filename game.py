@@ -46,6 +46,7 @@ class Game:
         ]
 
         self.load_level()
+        self.level_complete = False
 
     def load_level(self):
         """Parse the level map and initialize game state"""
@@ -110,6 +111,18 @@ class Game:
         # Move the player
         self.player_pos = new_pos
 
+        # Check if level is complete
+        self.check_win()
+
+    def check_win(self):
+        """Check if all boxes are on targets"""
+        for box in self.boxes:
+            if box not in self.targets:
+                return  # At least one box is not on a target
+
+        # All boxes are on targets!
+        self.level_complete = True
+
     def handle_events(self):
         """Handle input events"""
         for event in pygame.event.get():
@@ -118,14 +131,20 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                elif event.key == pygame.K_UP:
-                    self.move_player(0, -1)
-                elif event.key == pygame.K_DOWN:
-                    self.move_player(0, 1)
-                elif event.key == pygame.K_LEFT:
-                    self.move_player(-1, 0)
-                elif event.key == pygame.K_RIGHT:
-                    self.move_player(1, 0)
+                elif event.key == pygame.K_r:
+                    # Restart level
+                    self.level_complete = False
+                    self.load_level()
+                elif not self.level_complete:
+                    # Only allow movement if level not complete
+                    if event.key == pygame.K_UP:
+                        self.move_player(0, -1)
+                    elif event.key == pygame.K_DOWN:
+                        self.move_player(0, 1)
+                    elif event.key == pygame.K_LEFT:
+                        self.move_player(-1, 0)
+                    elif event.key == pygame.K_RIGHT:
+                        self.move_player(1, 0)
 
     def update(self):
         """Update game state"""
@@ -184,6 +203,26 @@ class Game:
             center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
             pygame.draw.circle(self.screen, RED, (center_x, center_y), TILE_SIZE // 2 - 5)
             pygame.draw.circle(self.screen, BLACK, (center_x, center_y), TILE_SIZE // 2 - 5, 3)
+
+        # Draw victory message if level complete
+        if self.level_complete:
+            # Semi-transparent overlay
+            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+            overlay.set_alpha(200)
+            overlay.fill(BLACK)
+            self.screen.blit(overlay, (0, 0))
+
+            # Victory text
+            font_large = pygame.font.Font(None, 80)
+            font_small = pygame.font.Font(None, 40)
+
+            victory_text = font_large.render("LEVEL COMPLETE!", True, YELLOW)
+            victory_rect = victory_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
+            self.screen.blit(victory_text, victory_rect)
+
+            restart_text = font_small.render("Press R to restart", True, WHITE)
+            restart_rect = restart_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40))
+            self.screen.blit(restart_text, restart_rect)
 
         pygame.display.flip()
 
