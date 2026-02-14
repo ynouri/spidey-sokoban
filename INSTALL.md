@@ -9,11 +9,9 @@
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
-2. **Download and run the game**:
+2. **Download and run the game (one-liner)**:
    ```bash
-   git clone https://github.com/yourusername/spidey-sokoban.git
-   cd spidey-sokoban
-   uv run game.py
+   git clone https://github.com/yourusername/spidey-sokoban.git && cd spidey-sokoban && uv run game.py
    ```
 
 That's it! The first run will take a moment to set up the environment, but subsequent runs will be instant.

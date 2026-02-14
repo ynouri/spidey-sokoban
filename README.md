@@ -4,16 +4,19 @@ A Sokoban puzzle game for kids featuring Spidey!
 
 ## Quick Start (Recommended)
 
-**The easiest way to run the game using `uv`:**
+**One-liner to clone and run (assuming `uv` is installed):**
 
 ```bash
-# 1. Install uv (if you don't have it)
+git clone https://github.com/yourusername/spidey-sokoban.git && cd spidey-sokoban && uv run game.py
+```
+
+**First-time setup (if you don't have `uv`):**
+
+```bash
+# Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 2. Clone and run the game
-git clone https://github.com/yourusername/spidey-sokoban.git
-cd spidey-sokoban
-uv run game.py
+# Then run the one-liner above
 ```
 
 That's it! `uv` automatically handles everything - no manual setup needed! 🎮
