@@ -11,7 +11,7 @@
 
 2. **Download and run the game (one-liner)**:
    ```bash
-   git clone https://github.com/yourusername/spidey-sokoban.git && cd spidey-sokoban && uv run game.py
+   git clone https://github.com/yourusername/spidey-sokoban.git && cd spidey-sokoban && uv run --no-project game.py
    ```
 
 That's it! The first run will take a moment to set up the environment, but subsequent runs will be instant.
@@ -62,12 +62,12 @@ git clone https://github.com/yourusername/spidey-sokoban.git
 cd spidey-sokoban
 
 # Run the game
-uv run game.py
+uv run --no-project game.py
 
 # Run tests
-uv run python test_levels.py
+uv run --no-project python test_levels.py
 
-# Run with Python directly (after uv sync)
-uv sync
-uv run python game.py
+# Or install dependencies and run directly
+uv pip install pygame pillow
+python game.py
 ```

@@ -7,7 +7,7 @@ A Sokoban puzzle game for kids featuring Spidey!
 **One-liner to clone and run (assuming `uv` is installed):**
 
 ```bash
-git clone https://github.com/yourusername/spidey-sokoban.git && cd spidey-sokoban && uv run game.py
+git clone https://github.com/yourusername/spidey-sokoban.git && cd spidey-sokoban && uv run --no-project game.py
 ```
 
 **First-time setup (if you don't have `uv`):**
