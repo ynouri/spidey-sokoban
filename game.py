@@ -55,13 +55,15 @@ class Game:
             self.player_sprite = None
 
         # Game states
-        self.STATE_MENU = 'menu'
+        self.STATE_MODE_SELECT = 'mode_select'
+        self.STATE_DIFFICULTY_SELECT = 'difficulty_select'
         self.STATE_PLAYING = 'playing'
-        self.state = self.STATE_MENU
+        self.state = self.STATE_MODE_SELECT
 
         # Level management
         self.level_manager = LevelManager()
-        self.difficulty = None  # Will be set when user selects difficulty
+        self.game_mode = None  # 'custom' or 'original'
+        self.difficulty = None  # Will be set when user selects difficulty (custom mode only)
         self.levels = []
         self.current_level = 0
         self.level_complete = False
@@ -69,6 +71,8 @@ class Game:
         self.victory_frame = 0  # For victory animation
 
         # Menu state
+        self.selected_mode = 0  # 0=custom, 1=original
+        self.mode_names = ['CUSTOM LEVELS', 'ORIGINAL SOKOBAN']
         self.selected_difficulty = 0  # 0=easy, 1=medium, 2=hard
         self.difficulty_names = ['EASY', 'MEDIUM', 'HARD']
 
@@ -109,11 +113,25 @@ class Game:
         self.victory_frame = 0
 
     def start_game(self, difficulty):
-        """Start a new game with the selected difficulty"""
+        """Start a new game with the selected difficulty (custom levels)"""
+        self.game_mode = 'custom'
         self.difficulty = difficulty
         self.levels = self.level_manager.get_levels(difficulty.lower())
         if not self.levels:
             print(f"No levels found for difficulty: {difficulty}")
+            return False
+        self.current_level = 0
+        self.state = self.STATE_PLAYING
+        self.load_level()
+        return True
+
+    def start_original_game(self):
+        """Start a new game with original Sokoban levels"""
+        self.game_mode = 'original'
+        self.difficulty = None
+        self.levels = self.level_manager.get_original_levels()
+        if not self.levels:
+            print("No original levels found")
             return False
         self.current_level = 0
         self.state = self.STATE_PLAYING
@@ -173,13 +191,28 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     if self.state == self.STATE_PLAYING:
-                        # Return to menu from game
-                        self.state = self.STATE_MENU
+                        # Return to mode select from game
+                        self.state = self.STATE_MODE_SELECT
+                    elif self.state == self.STATE_DIFFICULTY_SELECT:
+                        # Return to mode select from difficulty menu
+                        self.state = self.STATE_MODE_SELECT
                     else:
                         self.running = False
 
-                # Menu state handling
-                if self.state == self.STATE_MENU:
+                # Mode selection handling
+                if self.state == self.STATE_MODE_SELECT:
+                    if event.key == pygame.K_UP:
+                        self.selected_mode = (self.selected_mode - 1) % 2
+                    elif event.key == pygame.K_DOWN:
+                        self.selected_mode = (self.selected_mode + 1) % 2
+                    elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                        if self.selected_mode == 0:  # Custom levels
+                            self.state = self.STATE_DIFFICULTY_SELECT
+                        else:  # Original Sokoban
+                            self.start_original_game()
+
+                # Difficulty selection handling (custom mode only)
+                elif self.state == self.STATE_DIFFICULTY_SELECT:
                     if event.key == pygame.K_UP:
                         self.selected_difficulty = (self.selected_difficulty - 1) % 3
                     elif event.key == pygame.K_DOWN:
@@ -217,7 +250,76 @@ class Game:
         if self.state == self.STATE_PLAYING and self.level_complete:
             self.victory_frame += 1
 
-    def draw_menu(self):
+    def draw_mode_select(self):
+        """Draw the game mode selection menu"""
+        # Gradient background
+        for y in range(WINDOW_HEIGHT):
+            color_value = int(173 + (y / WINDOW_HEIGHT) * 40)
+            color = (color_value, 216, 230)
+            pygame.draw.line(self.screen, color, (0, y), (WINDOW_WIDTH, y))
+
+        # Title
+        font_title = pygame.font.Font(None, 80)
+        title = font_title.render("SPIDEY SOKOBAN", True, SPIDEY_RED)
+        title_shadow = font_title.render("SPIDEY SOKOBAN", True, BLACK)
+        title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 150))
+        shadow_rect = title_rect.copy()
+        shadow_rect.x += 4
+        shadow_rect.y += 4
+        self.screen.blit(title_shadow, shadow_rect)
+        self.screen.blit(title, title_rect)
+
+        # Subtitle
+        font_subtitle = pygame.font.Font(None, 40)
+        subtitle = font_subtitle.render("SELECT GAME MODE", True, BLACK)
+        subtitle_rect = subtitle.get_rect(center=(WINDOW_WIDTH // 2, 250))
+        self.screen.blit(subtitle, subtitle_rect)
+
+        # Mode options
+        font_option = pygame.font.Font(None, 60)
+        y_start = 370
+        y_spacing = 120
+
+        for i, mode_name in enumerate(self.mode_names):
+            # Get level count for this mode
+            if i == 0:  # Custom levels
+                level_info = f"({self.level_manager.get_total_levels()} levels)"
+            else:  # Original Sokoban
+                level_info = f"({self.level_manager.get_original_level_count()} levels)"
+
+            text = f"{mode_name}"
+            info_text = level_info
+
+            if i == self.selected_mode:
+                # Selected option - highlighted
+                color = SPIDEY_RED
+                # Draw selection box
+                box_rect = pygame.Rect(WINDOW_WIDTH // 2 - 300, y_start + i * y_spacing - 40,
+                                      600, 90)
+                pygame.draw.rect(self.screen, YELLOW, box_rect, 5)
+            else:
+                color = DARK_GRAY
+
+            option_text = font_option.render(text, True, color)
+            option_rect = option_text.get_rect(center=(WINDOW_WIDTH // 2, y_start + i * y_spacing))
+            self.screen.blit(option_text, option_rect)
+
+            # Level info
+            font_small = pygame.font.Font(None, 36)
+            info_render = font_small.render(info_text, True, color)
+            info_rect = info_render.get_rect(center=(WINDOW_WIDTH // 2, y_start + i * y_spacing + 35))
+            self.screen.blit(info_render, info_rect)
+
+        # Instructions
+        font_small = pygame.font.Font(None, 36)
+        instr1 = font_small.render("Use UP/DOWN arrows to select", True, BLACK)
+        instr2 = font_small.render("Press ENTER or SPACE to continue", True, BLACK)
+        instr1_rect = instr1.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 100))
+        instr2_rect = instr2.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 60))
+        self.screen.blit(instr1, instr1_rect)
+        self.screen.blit(instr2, instr2_rect)
+
+    def draw_difficulty_menu(self):
         """Draw the difficulty selection menu"""
         # Gradient background
         for y in range(WINDOW_HEIGHT):
@@ -277,8 +379,12 @@ class Game:
 
     def draw(self):
         """Draw everything to the screen"""
-        if self.state == self.STATE_MENU:
-            self.draw_menu()
+        if self.state == self.STATE_MODE_SELECT:
+            self.draw_mode_select()
+            pygame.display.flip()
+            return
+        elif self.state == self.STATE_DIFFICULTY_SELECT:
+            self.draw_difficulty_menu()
             pygame.display.flip()
             return
 
@@ -392,7 +498,13 @@ class Game:
 
         # Draw level indicator and move counter
         font_small = pygame.font.Font(None, 36)
-        level_text = font_small.render(f"Level {self.current_level + 1}/{len(self.levels)}", True, BLACK)
+        if self.game_mode == 'original':
+            mode_label = "Original"
+        elif self.difficulty:
+            mode_label = self.difficulty
+        else:
+            mode_label = "Custom"
+        level_text = font_small.render(f"{mode_label} - Level {self.current_level + 1}/{len(self.levels)}", True, BLACK)
         self.screen.blit(level_text, (20, 20))
 
         moves_text = font_small.render(f"Moves: {self.move_count}", True, BLACK)

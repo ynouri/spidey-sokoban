@@ -21,7 +21,9 @@ class LevelManager:
         """
         self.levels_dir = Path(levels_dir)
         self.levels_cache = {}
+        self.original_levels = []
         self._load_all_levels()
+        self._load_original_levels()
 
     def _load_all_levels(self):
         """Load all levels from files into cache"""
@@ -87,3 +89,59 @@ class LevelManager:
             Total count of levels
         """
         return sum(len(levels) for levels in self.levels_cache.values())
+
+    def _load_original_levels(self):
+        """Load the original 90 Sokoban levels from default.txt"""
+        original_file = self.levels_dir / 'original_sokoban.txt'
+
+        if not original_file.exists():
+            print(f"Warning: Original levels file not found at {original_file}")
+            return
+
+        try:
+            with open(original_file, 'r') as f:
+                content = f.read()
+
+            # Split by ~ delimiter
+            level_sections = content.split('~')
+
+            for section in level_sections:
+                section = section.strip()
+                if not section:
+                    continue
+
+                # Split into lines
+                lines = section.split('\n')
+
+                # First line should be the level number
+                if lines and lines[0].strip().isdigit():
+                    # Remove the level number line
+                    level_map = lines[1:]
+                    # Remove empty lines at start and end
+                    while level_map and not level_map[0].strip():
+                        level_map.pop(0)
+                    while level_map and not level_map[-1].strip():
+                        level_map.pop()
+
+                    if level_map:
+                        self.original_levels.append(level_map)
+
+            print(f"Loaded {len(self.original_levels)} original Sokoban levels")
+        except Exception as e:
+            print(f"Error loading original levels: {e}")
+
+    def get_original_levels(self):
+        """Get all original Sokoban levels
+
+        Returns:
+            List of original level maps
+        """
+        return self.original_levels
+
+    def get_original_level_count(self):
+        """Get the number of original levels
+
+        Returns:
+            Number of original levels
+        """
+        return len(self.original_levels)
