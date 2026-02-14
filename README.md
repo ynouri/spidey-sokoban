@@ -63,10 +63,15 @@ python game.py
 
 ## How to Play
 
-**Main Menu:**
-- **UP/DOWN**: Select difficulty (Easy/Medium/Hard)
-- **ENTER or SPACE**: Start game with selected difficulty
+**Mode Selection:**
+- **UP/DOWN**: Select mode (Custom Levels or Original Sokoban)
+- **ENTER or SPACE**: Confirm selection
 - **ESC**: Quit game
+
+**Difficulty Selection (Custom mode only):**
+- **UP/DOWN**: Select difficulty (Easy/Medium/Hard)
+- **ENTER or SPACE**: Start game
+- **ESC**: Return to mode selection
 
 **In Game:**
 - **Arrow Keys**: Move Spin up, down, left, right
@@ -117,12 +122,24 @@ python game.py
 - ✅ Comprehensive unit tests for level validation
 - ✅ All levels verified to be valid and properly formatted
 
+**Iteration E Complete ✅**: Original Sokoban Levels
+- ✅ Added 90 original Sokoban levels from classic collection
+- ✅ Mode selection menu (Custom vs Original)
+- ✅ Updated menu flow with multiple screens
+- ✅ Level parser for original format
+- ✅ Total: 102 levels (12 custom + 90 original)
+
 **Features:**
 - 🎨 Comic book themed visuals
-- 🎮 12 levels across 3 difficulty levels
-  - Easy: 5 levels
-  - Medium: 4 levels (with internal obstacles)
-  - Hard: 3 levels (complex puzzles)
+- 🎮 **102 total levels!**
+  - **Custom Levels (12):**
+    - Easy: 5 levels
+    - Medium: 4 levels (with internal obstacles)
+    - Hard: 3 levels (complex puzzles)
+  - **Original Sokoban (90):**
+    - Classic collection from original game
+    - Progressive difficulty
+- 🎯 Two game modes: Custom or Original
 - 📊 Move counter to track performance
 - ⭐ Animated victory celebrations
 - 🔄 Easy restart with R key
