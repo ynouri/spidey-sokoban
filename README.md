@@ -2,19 +2,61 @@
 
 A Sokoban puzzle game for kids featuring Spidey!
 
-## Requirements
+## Quick Start (Recommended)
 
-- Python 3.x
-- pygame
-- Pillow (for image processing)
-- conda environment named "pygame"
-
-## How to Run
+**The easiest way to run the game using `uv`:**
 
 ```bash
-conda activate pygame
+# 1. Install uv (if you don't have it)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 2. Clone and run the game
+git clone https://github.com/yourusername/spidey-sokoban.git
+cd spidey-sokoban
+uv run game.py
+```
+
+That's it! `uv` automatically handles everything - no manual setup needed! 🎮
+
+## Alternative Installation Methods
+
+### Using Python + pip
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/spidey-sokoban.git
+cd spidey-sokoban
+
+# Install dependencies
+pip install pygame pillow
+
+# Run the game
 python game.py
 ```
+
+### Using conda
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/spidey-sokoban.git
+cd spidey-sokoban
+
+# Create and activate environment
+conda create -n pygame python=3.11
+conda activate pygame
+
+# Install dependencies
+pip install pygame pillow
+
+# Run the game
+python game.py
+```
+
+## Requirements
+
+- Python 3.9+
+- pygame 2.5.0+
+- Pillow 10.0.0+
 
 ## How to Play
 
