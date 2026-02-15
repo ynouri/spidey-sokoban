@@ -76,6 +76,10 @@ class Game:
         self.selected_difficulty = 0  # 0=easy, 1=medium, 2=hard
         self.difficulty_names = ['EASY', 'MEDIUM', 'HARD']
 
+        # Dynamic tile sizing
+        self.current_tile_size = TILE_SIZE
+        self.scaled_sprite = self.player_sprite
+
     def load_level(self):
         """Parse the level map and initialize game state"""
         self.level_map = self.levels[self.current_level]
@@ -102,11 +106,38 @@ class Game:
                     self.player_pos = pos
                     self.targets.append(pos)
 
+        # Calculate dynamic tile size to fit level in window
+        # Reserve space for title (80px) and UI elements (bottom 100px, sides 40px each)
+        available_width = WINDOW_WIDTH - 80
+        available_height = WINDOW_HEIGHT - 180
+
+        level_width_tiles = max(len(row) for row in self.level_map) if self.level_map else 1
+        level_height_tiles = len(self.level_map)
+
+        # Calculate tile size that fits both dimensions
+        tile_size_width = available_width // level_width_tiles
+        tile_size_height = available_height // level_height_tiles
+        self.current_tile_size = min(tile_size_width, tile_size_height, TILE_SIZE)
+
+        # Don't go below a minimum size
+        self.current_tile_size = max(self.current_tile_size, 30)
+
+        # Scale player sprite if needed
+        if self.player_sprite and self.current_tile_size != TILE_SIZE:
+            sprite_size = int(self.current_tile_size * 0.9)
+            original_sprite = pygame.image.load('assets/spin.png')
+            self.scaled_sprite = pygame.transform.scale(
+                original_sprite,
+                (sprite_size, sprite_size)
+            )
+        else:
+            self.scaled_sprite = self.player_sprite
+
         # Calculate offset to center the level
-        level_width = len(self.level_map[0]) * TILE_SIZE
-        level_height = len(self.level_map) * TILE_SIZE
+        level_width = level_width_tiles * self.current_tile_size
+        level_height = level_height_tiles * self.current_tile_size
         self.offset_x = (WINDOW_WIDTH - level_width) // 2
-        self.offset_y = (WINDOW_HEIGHT - level_height) // 2
+        self.offset_y = (WINDOW_HEIGHT - level_height) // 2 + 40  # Offset down for title
 
         # Reset move counter and victory animation
         self.move_count = 0
@@ -411,10 +442,10 @@ class Game:
             for x, cell in enumerate(row):
                 if cell != '#':
                     rect = pygame.Rect(
-                        self.offset_x + x * TILE_SIZE,
-                        self.offset_y + y * TILE_SIZE,
-                        TILE_SIZE,
-                        TILE_SIZE
+                        self.offset_x + x * self.current_tile_size,
+                        self.offset_y + y * self.current_tile_size,
+                        self.current_tile_size,
+                        self.current_tile_size
                     )
                     pygame.draw.rect(self.screen, WHITE, rect)
                     pygame.draw.rect(self.screen, GRAY, rect, 2)
@@ -422,10 +453,10 @@ class Game:
         # Draw walls (comic book panel style)
         for x, y in self.walls:
             rect = pygame.Rect(
-                self.offset_x + x * TILE_SIZE,
-                self.offset_y + y * TILE_SIZE,
-                TILE_SIZE,
-                TILE_SIZE
+                self.offset_x + x * self.current_tile_size,
+                self.offset_y + y * self.current_tile_size,
+                self.current_tile_size,
+                self.current_tile_size
             )
             # Gradient effect - darker at bottom
             pygame.draw.rect(self.screen, (80, 80, 90), rect)
@@ -436,24 +467,24 @@ class Game:
 
         # Draw targets (glowing green circles)
         for x, y in self.targets:
-            center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
-            center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
+            center_x = self.offset_x + x * self.current_tile_size + self.current_tile_size // 2
+            center_y = self.offset_y + y * self.current_tile_size + self.current_tile_size // 2
             # Outer glow
-            pygame.draw.circle(self.screen, LIME, (center_x, center_y), TILE_SIZE // 3 + 2)
+            pygame.draw.circle(self.screen, LIME, (center_x, center_y), self.current_tile_size // 3 + 2)
             # Main circle
-            pygame.draw.circle(self.screen, GREEN, (center_x, center_y), TILE_SIZE // 3)
+            pygame.draw.circle(self.screen, GREEN, (center_x, center_y), self.current_tile_size // 3)
             # Inner highlight
-            pygame.draw.circle(self.screen, LIME, (center_x - 5, center_y - 5), TILE_SIZE // 6)
+            pygame.draw.circle(self.screen, LIME, (center_x - 5, center_y - 5), self.current_tile_size // 6)
             # Border
-            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), TILE_SIZE // 3, 3)
+            pygame.draw.circle(self.screen, BLACK, (center_x, center_y), self.current_tile_size // 3, 3)
 
         # Draw boxes (crate style with wood texture)
         for x, y in self.boxes:
             rect = pygame.Rect(
-                self.offset_x + x * TILE_SIZE + 8,
-                self.offset_y + y * TILE_SIZE + 8,
-                TILE_SIZE - 16,
-                TILE_SIZE - 16
+                self.offset_x + x * self.current_tile_size + 8,
+                self.offset_y + y * self.current_tile_size + 8,
+                self.current_tile_size - 16,
+                self.current_tile_size - 16
             )
             # Main box color
             pygame.draw.rect(self.screen, BROWN, rect)
@@ -473,18 +504,18 @@ class Game:
         if self.player_pos:
             x, y = self.player_pos
 
-            if self.player_sprite:
-                # Use the sprite image
-                sprite_rect = self.player_sprite.get_rect()
+            if self.scaled_sprite:
+                # Use the scaled sprite image
+                sprite_rect = self.scaled_sprite.get_rect()
                 # Center the sprite in the tile
-                sprite_x = self.offset_x + x * TILE_SIZE + (TILE_SIZE - sprite_rect.width) // 2
-                sprite_y = self.offset_y + y * TILE_SIZE + (TILE_SIZE - sprite_rect.height) // 2
-                self.screen.blit(self.player_sprite, (sprite_x, sprite_y))
+                sprite_x = self.offset_x + x * self.current_tile_size + (self.current_tile_size - sprite_rect.width) // 2
+                sprite_y = self.offset_y + y * self.current_tile_size + (self.current_tile_size - sprite_rect.height) // 2
+                self.screen.blit(self.scaled_sprite, (sprite_x, sprite_y))
             else:
                 # Fallback to drawn character if sprite not loaded
-                center_x = self.offset_x + x * TILE_SIZE + TILE_SIZE // 2
-                center_y = self.offset_y + y * TILE_SIZE + TILE_SIZE // 2
-                radius = TILE_SIZE // 2 - 5
+                center_x = self.offset_x + x * self.current_tile_size + self.current_tile_size // 2
+                center_y = self.offset_y + y * self.current_tile_size + self.current_tile_size // 2
+                radius = self.current_tile_size // 2 - 5
                 pygame.draw.circle(self.screen, SPIDEY_RED, (center_x, center_y), radius)
                 pygame.draw.circle(self.screen, SPIDEY_BLUE, (center_x - radius//3, center_y), radius//2)
                 spider_size = radius // 3
